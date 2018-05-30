@@ -91,15 +91,24 @@ class Modflow(object):
         os.chdir(ori_wd)
 
     def setBas(self, ib, sh):
+        p_name='bas6'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.bas6 = flopy.modflow.ModflowBas(
             self.modflow, ibound = ib, strt = sh)
 
     def setChd(self, spd):
+        p_name='chd'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.chd =\
             flopy.modflow.ModflowChd(
                 self.modflow, stress_period_data = spd)
 
     def setDis(self, tp, bt, dr, dc, np_, pl, ns, iu, lu, st):
+        p_name='dis'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         if bt.ndim == 2: # skip layer, 1
             if tp.shape != bt.shape:
                 raise ValueError(
@@ -118,6 +127,9 @@ class Modflow(object):
             itmuni = iu, lenuni = lu, steady = st)
 
     def setLpf(self, **kwargs):
+        p_name='lpf'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.lpf = flopy.modflow.ModflowLpf(
             self.modflow, **kwargs)
 
@@ -126,12 +138,21 @@ class Modflow(object):
 
 
     def setOc(self, **kwargs):
+        p_name='oc'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.oc = flopy.modflow.ModflowOc(self.modflow, **kwargs)
 
     def setPcg(self):
+        p_name='pcg'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.pcg = flopy.modflow.ModflowPcg(self.modflow)
 
     def setWel(self, spd):
+        p_name='wel'
+        if self.modflow.has_package(p_name):
+            self.modflow.remove_package(p_name)
         self.wel =\
             flopy.modflow.ModflowWel(
                 self.modflow, stress_period_data = spd)
@@ -147,7 +168,11 @@ class Modflow(object):
         os.chdir(output_dir)
         if write_input:
             self.modflow.write_input()
-        self.modflow.run_model(silent)
+        res = self.modflow.run_model(silent)
+        if not res[0]:
+            print('Warning: Modflow run with no success.')
+            import pdb
+            pdb.set_trace()
         for p in self.modflow.get_package_list():
             setattr(self, p.lower(), self.modflow.get_package(p))
         self.hds = flopy.utils.binaryfile.HeadFile(
