@@ -164,7 +164,9 @@ class Modflow(object):
         ori_p = os.getcwd()
         output_dir = os.path.join(self.working_path, self.modflow_name)
         if not os.path.exists(output_dir):
-            os.mkdir(output_dir)
+            if self.use_temp:
+                print('Warning: Temporal folder not exists.')
+            os.mkdirs(output_dir)
         os.chdir(output_dir)
         if write_input:
             self.modflow.write_input()
